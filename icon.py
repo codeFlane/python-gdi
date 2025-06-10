@@ -9,15 +9,19 @@ class IconSourceDLL(Enum):
     IMAGERES = r"C:\Windows\System32\imageres.dll"
 
 class ShellIcon(Enum):
-    """Icons for Shell32.dll
+    """Icons Shell32.dll contains
+    work in progress
     MADE: 100/452
+    #old: icons with low quality
+    #{number}: icon that has similar copies with {number} id (may more than 1 copies)
+    also comments can contain short description
     """
     UNKNOWN_FILE = 0
     TEXT_A_FILE = 1 #text file with "A" letter
     EXE_PROGRAM = 2
     FOLDER = 3 #4, 86
-    DISK_SAVE_DISKETTE = 5
-    DISK_SAVE_DISKETTE2 = 6
+    DISK_SAVE_DISK = 5
+    DISK_SAVE_DISKETTE = 6
     DISK = 7 #8, 79
     DISK_CABLE = 9
     DISK_CABLE_DISABLED = 10
@@ -95,14 +99,25 @@ class ShellIcon(Enum):
     CLEAN_WINDOW = 97
     DOUBLE_CLEAN_WINDOWS = 98
     UNKNOWN_FILE_CLICKED = 99 #100
-    #work in progress..
 
-def extract(source: IconSourceDLL | str, icon: int):
+class UserIcon(Enum):
+    """Icons User32.dll contains
+    #{number}: icon that has similar copies with {number} id (may more than 1 copies)
+    """
+    EXE_APPLICATION = 0 #5
+    WARNING = 1
+    QUESTION = 2
+    ERROR = 3
+    INFO = 4
+    ADMIN = 6
+
+
+def extract(source: IconSourceDLL | str, icon: int | ShellIcon):
     path = source if isinstance(source, str) else source.value
     if not os.path.exists(path):
         raise FileNotFoundError(f"{path} not found")
 
-    icons, _ = ExtractIconEx(path, icon, 1)
+    icons, _ = ExtractIconEx(path, icon if isinstance(icon, int) else icon.value, 1)
     if not icons:
         raise ValueError(f"Icon #{icon} not found in {path}")
     return icons[0]
@@ -112,11 +127,5 @@ def draw(hdc, x, y, icon, rect=True, rect_color=0x202020):
         brush = CreateSolidBrush(rect_color)
         FillRect(hdc, (x, y, x + 32, y + 32), brush)
 
-    # Теперь рисуем саму иконку
     DrawIcon(hdc, x, y, icon)
     DestroyIcon(icon)
-
-
-hdc = get_hdc()
-icon = extract(IconSourceDLL.SHELL, 100)
-draw(hdc, 500, 500, icon)
