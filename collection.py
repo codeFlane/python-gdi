@@ -3,6 +3,7 @@ import win32con
 from __init__ import random_color, clean, get_cursor_pos, is_mouse_pressed, MouseButton
 from random import randint
 from enum import Enum
+from icon import draw, extract, IconSourceDLL, ShellIcon
 
 def invert_colors(hdc, w, h, color=0xF0FFFF):
     """inverting colors"""
@@ -110,15 +111,15 @@ def flip_h(hdc, w, h):
     #by CYBER SOLDIER https://www.youtube.com/watch?v=bygzc75iw9g (codeFlane python adaptation)
     StretchBlt(hdc, w, 0, -w, h, hdc, 0, 0, w, h, win32con.SRCCOPY)
 
-def draw_icons_on_mouse(hdc, icon=ExtractIcon(0, 'Shell32.dll', 0)):
+def draw_icons_on_mouse(hdc, icon=extract(IconSourceDLL.SHELL, 0)):
     """draw icons behind mouse"""
     #by CYBER SOLDIER https://www.youtube.com/watch?v=bygzc75iw9g (codeFlane python adaptation)
     cursor = get_cursor_pos()
-    DrawIcon(hdc, cursor[0], cursor[1], icon)
+    draw(hdc, cursor[0], cursor[1], icon)
 
-def draw_icons_on_clicked_mouse(hdc, button=MouseButton.LEFT, icon=ExtractIcon(0, 'Shell32.dll', 0)):
+def draw_icons_on_clicked_mouse(hdc, button=MouseButton.LEFT, icon=extract(IconSourceDLL.SHELL, ShellIcon.STAR)):
     """draw icons behind mouse (only on click)"""
     #by CYBER SOLDIER https://www.youtube.com/watch?v=bygzc75iw9g (codeFlane python adaptation)
     if is_mouse_pressed(button):
         cursor = get_cursor_pos()
-        DrawIcon(hdc, cursor[0], cursor[1], icon)
+        draw(hdc, cursor[0], cursor[1], icon)

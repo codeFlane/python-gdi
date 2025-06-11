@@ -112,7 +112,7 @@ class UserIcon(Enum):
     ADMIN = 6
 
 
-def extract(source: IconSourceDLL | str, icon: int | ShellIcon):
+def extract(source: IconSourceDLL | str, icon: int | ShellIcon | UserIcon):
     path = source if isinstance(source, str) else source.value
     if not os.path.exists(path):
         raise FileNotFoundError(f"{path} not found")
@@ -128,4 +128,4 @@ def draw(hdc, x, y, icon, rect=True, rect_color=0x202020):
         FillRect(hdc, (x, y, x + 32, y + 32), brush)
 
     DrawIcon(hdc, x, y, icon)
-    DestroyIcon(icon)
+    # DestroyIcon(icon)
