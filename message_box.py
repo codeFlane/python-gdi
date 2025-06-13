@@ -58,7 +58,7 @@ class MessageBox:
 
 #WROTE BY CHATGPT
 class CustomMessageBox:
-    def __init__(self, title, message, image_path=None, icon_path=None, buttons=("OK",)):
+    def __init__(self, title, message, image_path=None, icon_path=None, buttons=("OK",), spawn_x: int = -1, spawn_y: int = -1):
         self.title = title
         self.message = message
         self.image_path = image_path
@@ -68,13 +68,13 @@ class CustomMessageBox:
         self.hInstance = win32api.GetModuleHandle(None)
         self.className = "CustomMsgBoxClass"
 
-        self.margin_top = 6
+        self.margin_top = 12
         self.margin_side = 20
-        self.icon_w = 32
-        self.icon_h = 32
-        self.text_w = 280
+        self.icon_w = 32 if image_path else 0
+        self.icon_h = 32 if image_path else 0
+        self.text_w = min(len(message) * 6 + 50, 400)
         self.text_h = 36
-        self.extra_vertical_spacing = 12
+        self.extra_vertical_spacing = 10
         self.button_w = 75
         self.button_h = 23
         self.spacing = 12
@@ -82,9 +82,11 @@ class CustomMessageBox:
         self.bottom_padding = 20
 
         lf = win32gui.LOGFONT()
-        lf.lfHeight = -12
+        lf.lfHeight = -14
         lf.lfFaceName = "Segoe UI"
         self.font = win32gui.CreateFontIndirect(lf)
+        self.spawn_x = spawn_x
+        self.spawn_y = spawn_y
 
     def _wnd_proc(self, hwnd, msg, wparam, lparam):
         if msg == win32con.WM_DESTROY:
@@ -130,14 +132,20 @@ class CustomMessageBox:
             pass
 
         content_h = max(self.icon_h, self.text_h) + 2 * self.margin_top + self.extra_vertical_spacing
-        total_btn_w = len(self.buttons) * self.button_w + (len(self.buttons) - 1) * self.spacing
-        win_w = max(self.icon_w + self.text_w + 3 * self.margin_side, total_btn_w + 2 * self.margin_side)
-        win_h = content_h + self.btn_area_h + self.bottom_padding + 10
+        total_btn_w = len(self.buttons) * self.button_w + (len(self.buttons) - 1) * self.spacing + 15
+        win_w = 100 + self.icon_w + self.text_w
+        win_h = content_h + self.btn_area_h + self.bottom_padding + 40
 
         screen_w = win32api.GetSystemMetrics(0)
         screen_h = win32api.GetSystemMetrics(1)
-        x = (screen_w - win_w) // 2
-        y = (screen_h - win_h) // 2
+        if self.spawn_x == -1:
+            x = (screen_w - win_w) // 2
+        else:
+            x = self.spawn_x
+        if self.spawn_y == -1:
+            y = (screen_h - win_h) // 2
+        else:
+            y = self.spawn_y
 
         hwnd = win32gui.CreateWindowEx(
             0, self.className, self.title,
@@ -166,7 +174,7 @@ class CustomMessageBox:
         text_hwnd = win32gui.CreateWindow(
             "Static", self.message,
             win32con.WS_VISIBLE | win32con.WS_CHILD | win32con.SS_LEFT,
-            self.icon_w + 2 * self.margin_side, self.margin_top + 4,
+            self.icon_w + 2 * self.margin_side if self.icon_path else 10, self.margin_top + 15,
             self.text_w, self.text_h,
             hwnd, 1001, self.hInstance, None
         )
@@ -185,7 +193,7 @@ class CustomMessageBox:
                 "Button", label,
                 style,
                 start_x + i * (self.button_w + self.spacing), btn_y,
-                self.button_w, self.button_h,
+                self.button_w, round(self.button_h * 1.5),
                 hwnd, i, self.hInstance, None
             )
             win32gui.SendMessage(btn_hwnd, 0x0030, self.font, True)

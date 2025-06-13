@@ -170,4 +170,5 @@ def draw(hdc, x, y, icon, rect=True, rect_color=0x202020):
 
     DrawIcon(hdc, x, y, icon)
 
-draw(get_hdc(), 500, 500, extract(IconSourceDLL.SHELL, 150))
+# test
+# draw(get_hdc(), 500, 500, extract(IconSourceDLL.SHELL, 150))

@@ -28,6 +28,10 @@ def endless_run(func, *args, delay: int = 0.01, **kwargs):
         func(*args, **kwargs)
         sleep(delay)
 
+def kill_proccess(name: str):
+    win32gui.PostMessage(win32gui.FindWindow(None, name), win32con.WM_CLOSE, 0, 0)
+    return not bool(win32gui.FindWindow(None, name))
+
 def color_from_str(color: str):
     color = color.strip('#')
     return eval(f'0x{color[4:6]}{color[2:4]}{color[0:2]}')
