@@ -2,7 +2,6 @@
 Library for creating GDI-malwares in python
 Fork of [Python-gdi-repo](https://github.com/Leo-Aqua/Python-gdi-repo/) with many new features!  
 idea - [Rewrite as module](https://github.com/Leo-Aqua/Python-gdi-repo/discussions/5)  
-NOW REPOSITORY IS UNDER PROGRESS
 Some of code wrote by chatgpt (like custom message box) and may not work (this is AI, lol)
 
 ## Functions
