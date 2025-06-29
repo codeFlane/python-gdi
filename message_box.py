@@ -2,9 +2,11 @@ from enum import Enum
 import win32con
 import win32gui
 import win32api
-import ctypes
 from os.path import exists
 from PIL import Image, ImageWin
+from __init__ import get_gdi_data
+from random import randint
+from threading import Thread
 
 RESULTS = ['', 'Ok', 'Cancel', 'Abort', 'Retry', 'Ignore', 'Yes', 'No']
 class MessageBoxButton(Enum):
@@ -58,7 +60,7 @@ class MessageBox:
 
 #WROTE BY CHATGPT
 class CustomMessageBox:
-    def __init__(self, title, message, image_path=None, icon_path=None, buttons=("OK",), spawn_x: int = -1, spawn_y: int = -1):
+    def __init__(self, title, message, image_path=None, icon_path=None, buttons=["OK"], spawn_x: int = -1, spawn_y: int = -1):
         self.title = title
         self.message = message
         self.image_path = image_path
@@ -184,7 +186,8 @@ class CustomMessageBox:
         start_x = win_w - self.margin_side - total_btn_w
         btn_y = content_h + (self.btn_area_h - self.button_h) // 2
 
-        for i, label in enumerate(self.buttons):
+        i = 0
+        for label in self.buttons:
             style = win32con.WS_VISIBLE | win32con.WS_CHILD | win32con.BS_PUSHBUTTON
             if i == 0:
                 style |= win32con.BS_DEFPUSHBUTTON
@@ -199,6 +202,7 @@ class CustomMessageBox:
             win32gui.SendMessage(btn_hwnd, 0x0030, self.font, True)
             if i == 0:
                 win32gui.SetFocus(btn_hwnd)
+            i += 1
 
         # Показ
         win32gui.ShowWindow(hwnd, win32con.SW_SHOWNORMAL)
@@ -208,3 +212,12 @@ class CustomMessageBox:
 
     def close(self):
         win32gui.PostMessage(self.hwnd, win32con.WM_CLOSE, 0, 0)
+
+def random_message(title: str = 'error', text: str = 'error', icon: str = 'test.ico'):
+    _, w, h = get_gdi_data()
+    def show():
+        box = CustomMessageBox(title, text, icon, icon, spawn_x=randint(0, w), spawn_y=randint(0, h))
+        box.show()
+
+    thread = Thread(target=show, daemon=True)
+    thread.start()

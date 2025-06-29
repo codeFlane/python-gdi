@@ -28,6 +28,9 @@ def get_pos(user32):
 def get_hdc():
     return win32gui.GetDC(0)
 
+def get_window_hdc():
+    return win32gui.GetWindowDC(win32gui.GetDesktopWindow())
+
 def endless_run(func, *args, delay: int = 0.01, **kwargs):
     i = 0
     while True:
@@ -132,20 +135,24 @@ def bluescreen():
 
 
 class GDIdata:
+    #deprecated, use get_gdi_data instead.
     def __init__(self, hdc=None, user32=None, w=None, h=None):
         self.hdc = hdc if hdc else get_hdc()
         self.user32 = user32 if user32 else get_user32()
         self.w = w if w else get_size(self.user32)[0]
         self.h = h if h else get_size(self.user32)[1]
 
+def get_gdi_data():
+    size = get_size(get_user32())
+    return get_window_hdc(), size[0], size[1]
+
 class GDIeffect:
-    def __init__(self, effect, start: int, end: int, delay: float = 0.1, data: GDIdata = GDIdata(), add_time: bool = False, **kwargs):
+    def __init__(self, effect, start: int, end: int, delay: float = 0.1, add_time: bool = False, **kwargs):
         self.effect = effect
         self.start = start
         self.end = end
         self.delay = delay
         self.run = False
-        self.data = data
         self.add_time = add_time
         self.kwargs = kwargs
 
@@ -153,8 +160,8 @@ class GDIeffect:
         self.run = True
         start = perf_counter()
         while self.run:
-            if self.add_time: self.effect(self.data, int((perf_counter() - start) * 1000), **self.kwargs)
-            else: self.effect(self.data, **self.kwargs)
+            if self.add_time: self.effect(int((perf_counter() - start) * 1000), **self.kwargs)
+            else: self.effect(**self.kwargs)
             sleep(self.delay)
 
     def stop(self):
@@ -164,11 +171,11 @@ def run_gdi(effects: list[GDIeffect]):
     start = perf_counter()
     while True:
         for eff in effects:
-            if eff.start <= int((perf_counter() - start) * 1000) <= eff.end:
+            if eff.start <= int((perf_counter() - start) * 1000) <= eff.end or eff.end == -1:
                 if not eff.run:
                     eff.thread = Thread(target=eff.loop, daemon=True)
                     eff.thread.start()
             else:
                 if eff.run:
                     eff.stop()
-        sleep(0.01)
+        sleep(0.001)

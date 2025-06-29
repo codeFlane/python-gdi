@@ -1,10 +1,10 @@
 from win32gui import *
 import win32con
 import win32api
-from __init__ import random_color, clean, get_cursor_pos, is_mouse_pressed, MouseButton, GDIdata
+from __init__ import random_color, clean, get_cursor_pos, is_mouse_pressed, MouseButton, get_gdi_data
 from random import randint
 from enum import Enum
-from icon import draw, extract, IconSourceDLL, ShellIcon
+from icon import draw, extract, IconSourceDLL, ShellIcon, UserIcon
 import ctypes
 import win32ui
 
@@ -17,28 +17,28 @@ class BLENDFUNCTION(ctypes.Structure):
         ("SourceConstantAlpha", ctypes.c_byte),
         ("AlphaFormat", ctypes.c_byte)
     ]
-def invert_colors(data, color=0xF0FFFF):
+def invert_colors(color=0xF0FFFF):
     """inverting colors"""
     #by CYBER SOLDIER https://www.youtube.com/watch?v=qnngjSVvpzM (codeFlane python adaptation)
-    hdc, w, h = data.hdc, data.w, data.h
+    hdc, w, h = get_gdi_data()
     brush = CreateSolidBrush(color)
     SelectObject(hdc, brush)
     PatBlt(hdc, 0, 0, w, h, win32con.PATINVERT)
     DeleteObject(brush)
 
-def random_invert_colors(data):
+def random_invert_colors():
     """inverting colors (randomly)"""
     #by CYBER SOLDIER https://www.youtube.com/watch?v=qnngjSVvpzM (codeFlane python adaptation)
-    hdc, w, h = data.hdc, data.w, data.h
+    hdc, w, h = get_gdi_data()
     brush = CreateSolidBrush(random_color())
     SelectObject(hdc, brush)
     PatBlt(hdc, 0, 0, w, h, win32con.PATINVERT)
     DeleteObject(brush)
 
-def blur(data, offset=4, speed=70):
+def blur(offset=4, speed=70):
     """blur effect"""
     #by CYBER SOLDIER https://www.youtube.com/watch?v=qnngjSVvpzM (codeFlane python adaptation)
-    hdc, w, h = data.hdc, data.w, data.h
+    hdc, w, h = get_gdi_data()
     mhdc = CreateCompatibleDC(hdc)
     hbit = CreateCompatibleBitmap(hdc, w, h)
     holdbit = SelectObject(mhdc, hbit)
@@ -49,10 +49,10 @@ def blur(data, offset=4, speed=70):
     DeleteObject(hbit)
     DeleteDC(mhdc)
 
-def radial_blur(data, lp_extra=30, speed=1000):
+def radial_blur(lp_extra=30, speed=1000):
     """blur + rotate tunnel effect"""
     #by CYBER SOLDIER https://www.youtube.com/watch?v=qnngjSVvpzM (codeFlane python adaptation)
-    hdc, w, h = data.hdc, data.w, data.h
+    hdc, w, h = get_gdi_data()
     mhdc = CreateCompatibleDC(hdc)
     hbit = CreateCompatibleBitmap(hdc, w, h)
     holdbit = SelectObject(mhdc, hbit)
@@ -85,10 +85,10 @@ class HatchBrushStyle(Enum):
     DIAGONAL_RECT = 5 #left-right dialgonal & right-left diagonal lines
     RANDOM = 6 #random
 
-def hatch_brush(data, style: HatchBrushStyle = HatchBrushStyle.RANDOM, set_bk_color=True):
+def hatch_brush(style: HatchBrushStyle = HatchBrushStyle.RANDOM, set_bk_color=True):
     """inverting random colors + many lines"""
     #by CYBER SOLDIER https://www.youtube.com/watch?v=qnngjSVvpzM (codeFlane python adaptation)
-    hdc, w, h = data.hdc, data.w, data.h
+    hdc, w, h = get_gdi_data()
     brush = CreateHatchBrush(style.value if style.value != 6 else randint(0, 5), random_color())
     if set_bk_color:
         SetBkColor(hdc, random_color())
@@ -96,85 +96,85 @@ def hatch_brush(data, style: HatchBrushStyle = HatchBrushStyle.RANDOM, set_bk_co
     PatBlt(hdc, 0, 0, w, h, win32con.PATINVERT)
     DeleteObject(brush)
 
-def color_filter(data, color):
+def color_filter(color):
     """color filter"""
     #by CYBER SOLDIER https://www.youtube.com/watch?v=qnngjSVvpzM (codeFlane python adaptation)
-    hdc, w, h = data.hdc, data.w, data.h
+    hdc, w, h = get_gdi_data()
     brush = CreateSolidBrush(color)
     SelectObject(hdc, brush)
     BitBlt(hdc, 0, 0, w, h, hdc, 0, 0, win32con.MERGECOPY)
     DeleteObject(brush)
 
-def random_color_filter(data):
+def random_color_filter():
     """random color filter"""
     #by CYBER SOLDIER https://www.youtube.com/watch?v=qnngjSVvpzM (codeFlane python adaptation)
-    hdc, w, h = data.hdc, data.w, data.h
+    hdc, w, h = get_gdi_data()
     clean([w, h])
     brush = CreateSolidBrush(random_color())
     SelectObject(hdc, brush)
     BitBlt(hdc, 0, 0, w, h, hdc, 0, 0, win32con.MERGECOPY)
     DeleteObject(brush)
 
-def tunnel(data, size=60):
+def tunnel(size=60):
     """copy window in small version that makes tunnel effect"""
     #by CYBER SOLDIER https://www.youtube.com/watch?v=bygzc75iw9g (codeFlane python adaptation)
-    hdc, w, h = data.hdc, data.w, data.h
+    hdc, w, h = get_gdi_data()
     StretchBlt(hdc, size, size, w - size * 2, h - size * 2, hdc, 0, 0, w, h, win32con.SRCCOPY)
 
-def flip_v(data):
+def flip_v():
     """flip screen vertically"""
     #by CYBER SOLDIER https://www.youtube.com/watch?v=bygzc75iw9g (codeFlane python adaptation)
-    hdc, w, h = data.hdc, data.w, data.h
+    hdc, w, h = get_gdi_data()
     StretchBlt(hdc, 0, h, w, -h, hdc, 0, 0, w, h, win32con.SRCCOPY)
 
-def flip_h(data):
+def flip_h():
     """flip screen horizontally"""
     #by CYBER SOLDIER https://www.youtube.com/watch?v=bygzc75iw9g (codeFlane python adaptation)
-    hdc, w, h = data.hdc, data.w, data.h
+    hdc, w, h = get_gdi_data()
     StretchBlt(hdc, w, 0, -w, h, hdc, 0, 0, w, h, win32con.SRCCOPY)
 
-def draw_icons_on_mouse(data, icon=extract(IconSourceDLL.SHELL, 0)):
+def draw_icons_on_mouse(icon=extract(IconSourceDLL.SHELL, 0)):
     """draw icons behind mouse"""
     #by CYBER SOLDIER https://www.youtube.com/watch?v=bygzc75iw9g (codeFlane python adaptation)
-    hdc = data.hdc
+    hdc, _, _ = get_gdi_data()
     cursor = get_cursor_pos()
     draw(hdc, cursor[0], cursor[1], icon)
 
-def draw_icons_on_clicked_mouse(data, button=MouseButton.LEFT, icon=extract(IconSourceDLL.SHELL, ShellIcon.STAR)):
+def draw_icons_on_clicked_mouse(button=MouseButton.LEFT, icon=extract(IconSourceDLL.SHELL, ShellIcon.STAR)):
     """draw icons behind mouse (only on click)"""
     #by CYBER SOLDIER https://www.youtube.com/watch?v=bygzc75iw9g (codeFlane python adaptation)
-    hdc = data.hdc, data.w, data.h
+    hdc, _, _ = get_gdi_data()
     if is_mouse_pressed(button):
         cursor = get_cursor_pos()
         draw(hdc, cursor[0], cursor[1], icon)
 
-def random_errors(data, icon=LoadIcon(None, win32con.IDI_ERROR)):
+def random_errors(icon=extract(IconSourceDLL.USER, UserIcon.ERROR)):
     """draw icons on screen randomly"""
     #by Leo-Aqua
-    hdc, w, h = data.hdc, data.w, data.h
-    DrawIcon(hdc, randint(0, w), randint(0, h), icon)
+    hdc, w, h = get_gdi_data()
+    draw(hdc, randint(0, w), randint(0, h), icon)
 
-def time_color_filter(data, t):
+def time_color_filter(t):
     """add color filter using current time (requires time)"""
     #by LeoLezury (from Hydrogen source code)
-    hdc, w, h = data.hdc, data.w, data.h
+    hdc, w, h = get_gdi_data()
     brush = CreateSolidBrush(win32api.RGB(t % 256, (t // 2) % 256, (t // 2) % 256))
     old = SelectObject(hdc, brush)
     PatBlt(hdc, 0, 0, w, h, win32con.PATINVERT)
     SelectObject(hdc, old)
     DeleteObject(brush)
 
-def time_resize(data, t):
+def time_resize(t):
     """resize using current time (requires time)"""
     #by LeoLezury (from Hydrogen source code)
-    hdc, w, h = data.hdc, data.w, data.h
+    hdc, w, h = get_gdi_data()
     t *= 10
     BitBlt(hdc, 0, 0, w, h, hdc, t % w, t % h, win32con.NOTSRCERASE)
 
-def pixelization(data):
+def pixelization():
     """pixelate your screen"""
     #by LeoLezury (from Hydrogen source code)
-    hdc, w, h = data.hdc, data.w, data.h
+    hdc, w, h = get_gdi_data()
     hdc_mem = CreateCompatibleDC(hdc)
     hbitmap = CreateCompatibleBitmap(hdc, w, h)
     old = SelectObject(hdc_mem, hbitmap)
@@ -187,11 +187,11 @@ def pixelization(data):
     DeleteObject(hbitmap)
     DeleteDC(hdc_mem)
 
-def random_text(data, text='HYDROGEN', count=1):
+def random_text(text='HYDROGEN', count=1):
     """add text with random position, color and background. You can add custom text using "text" keyword argument. You can also increase
     count of text adding per call using "count" keyword argument"""
     #by LeoLezury (from Hydrogen source code)
-    hdc, w, h = data.hdc, data.w, data.h
+    hdc, w, h = get_gdi_data()
     hdc_mem = CreateCompatibleDC(hdc)
     hbitmap = CreateCompatibleBitmap(hdc, w, h)
     old = SelectObject(hdc_mem, hbitmap)
@@ -207,17 +207,17 @@ def random_text(data, text='HYDROGEN', count=1):
     DeleteObject(hbitmap)
     DeleteDC(hdc_mem)
 
-def rotate_3d(data):
+def rotate_3d():
     """rotate your screen like 3d"""
     #by LeoLezury (from Hydrogen source code)
-    hdc, w, h = data.hdc, data.w, data.h
+    hdc, w, h = get_gdi_data()
     points = [(0, 0), (w, 0), (25, h)]
     PlgBlt(hdc, points, hdc, 0, 0, w + 25, h, None, 0, 0)
 
-def random_circles_rects(data, t, text="     "):
+def random_circles_rects(t, text="     "):
     """draw black-white circles and rects in random position (requires time). You can add text to rect using "text" keyword argument"""
     #by LeoLezury (from Hydrogen source code)
-    hdc, w, h = data.hdc, data.w, data.h
+    hdc, w, h = get_gdi_data()
     t *= 30
     RedrawWindow(None, None, None, win32con.RDW_ERASE | win32con.RDW_INVALIDATE | win32con.RDW_ALLCHILDREN)
     hdc_mem = CreateCompatibleDC(hdc)
@@ -236,3 +236,4 @@ def random_circles_rects(data, t, text="     "):
     SelectObject(hdc_mem, old)
     DeleteObject(hbitmap)
     DeleteDC(hdc_mem)
+    win32api

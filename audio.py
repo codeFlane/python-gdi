@@ -41,19 +41,17 @@ class HydrogenSequence(Enum): #audio sequences from hydrogen source code
     SEQ10 = lambda t: 10 * ((t >> 7) | (3 * t) | (t >> (t >> 15))) + ((t >> 8) & 5)
 
 class SalinewinSequence(Enum): #audio sequences from salinewin source code
-    SEQ1 = lambda t: t&t>>8
+    SEQ1 = lambda t: t & t >> 8
     SEQ2 = lambda t: t >> 5 | (t >> 2) * (t >> 5)
     SEQ3 = lambda t: 2 * (t >> 5 & t) - (t >> 5) + t * (t >> 14 & 14)
     SEQ4 = lambda t: t + (t & t ^ t >> 6) - t * (t >> 9 & (2 if t % 16 else 6) & t >> 9)
     SEQ5 = lambda t: t * (t ^ t + (t >> 15 | 1) ^ (t - 1280 ^ t) >> 10)
     SEQ6 = lambda t: t * ((t // 2 >> 10 | t % 16 * t >> 8) & 8 * t >> 12 & 18) | -(t // 16) + 64
-    SEQ6_REMIX = lambda t: t * ((t >> 20 | t % 32 * t >> 12) & 8 * t >> 12 & 18) | -(t // 16) + 80 #codeflane remix (made for fun :))
+    SEQ6_REMIX = lambda t: t * ((t // 3 >> 20 | t % 32 * t >> 8) & 8 * t >> 12 & 18) | -(t // 16) + 70 #codeflane remix (made for fun :))
     SEQ7 = lambda t: t * (6 if t & 16384 else 5) * (4 - (1 & t >> 8)) >> (3 & t >> 9) | (t | t * 3) >> 5
     SEQ8 = lambda t: t * ((6 if t & 4096 else 16) + (1 & t >> 14)) >> (3 & t >> 8) | t >> (3 if t & 4096 else 4)
     SEQ9 = lambda t: t * (((7 if t % 65536 < 59392 else t & 7) if t & 4096 else 16) ^ (1 & t >> 14)) >> (3 & (-t) >> (2 if t & 2048 else 10))
     SEQ10 = lambda t: t * randint(0, 1000)
-
-INCREASING_SEQ = lambda t: t * (t >> 10) | (t >> 2) * (t % 4096)
 
 class AudioPlayer:
     def __init__(self, seq):
@@ -63,7 +61,7 @@ class AudioPlayer:
         for t in range(count * 2):
             buf[t] = self.seq(t)
 
-    def play(self, count=100, samples_per_sec=8000):
+    def play(self, count, samples_per_sec=8000):
         nSampleCount = samples_per_sec * count
         nSamplesPerSec = samples_per_sec
         buffer = (ctypes.c_ubyte * (nSampleCount * 2))()
@@ -92,13 +90,9 @@ class AudioPlayer:
         while not (self.hdr.dwFlags & 0x00000001):
             time.sleep(0.01)
 
-        self.stop()
+        # self.stop()
 
     def stop(self):
         winmm.waveOutReset(self.hWaveOut)
         winmm.waveOutUnprepareHeader(self.hWaveOut, ctypes.byref(self.hdr), ctypes.sizeof(self.hdr))
         winmm.waveOutClose(self.hWaveOut)
-
-if __name__ == "__main__":
-    audio = AudioPlayer(SalinewinSequence.SEQ6)
-    audio.play()
