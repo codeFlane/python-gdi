@@ -4,6 +4,17 @@ Fork of [Python-gdi-repo](https://github.com/Leo-Aqua/Python-gdi-repo/) with man
 idea - [Rewrite as module](https://github.com/Leo-Aqua/Python-gdi-repo/discussions/5)  
 Some of code wrote by chatgpt (like custom message box) and may not work (this is AI, lol)
 
+## run gdi
+```
+from pytrojantool import run_gdi, GDIeffect, clean, get_size, get_user32
+from pytrojantool.collection import tunnel
+
+try:
+    run_gdi([GDIeffect(tunnel, 0, -1, 0.1)]) #0 - start time, -1 - end time (-1 for infinity), 0.1 - delay
+except KeyboardInterrupt:
+    clean(get_size(get_user32())) #clean screen
+```
+
 ## Functions
 - Message boxes 
 - Python-GDI-repo as library (collection.py)  
@@ -21,6 +32,7 @@ Some of code wrote by chatgpt (like custom message box) and may not work (this i
 - Add text support
 - Add wallpaper changer
 - More gdi effects
+- Rewrite get_gdi_data function
 - Payload creating (Payload class, inside gdi effetcs (custom of from collection), can edit start and stop time on every payload)
 You can ask to add new feature creaint issue!
 
